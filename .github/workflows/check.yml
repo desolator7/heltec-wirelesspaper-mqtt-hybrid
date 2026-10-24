@@ -1,0 +1,36 @@
+name: Firmware checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check publication for personal configuration
+        run: python3 scripts/check_public_files.py
+      - name: Test configuration and display logic
+        run: |
+          python3 -m unittest discover -s tests -v
+          g++ -std=c++17 -Wall -Wextra -Werror -pedantic -I . tests/test_display_logic.cpp -o /tmp/test-display-logic
+          /tmp/test-display-logic
+      - uses: arduino/setup-arduino-cli@81d310742121c928ea9c8bbd407b4217b432ae02 # v2
+        with:
+          version: "1.5.1"
+      - name: Install pinned board and libraries
+        env:
+          BOARD_INDEX: https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series/releases/latest/download/package_heltec_esp32_index.json
+        run: |
+          arduino-cli core update-index --additional-urls "$BOARD_INDEX"
+          arduino-cli core install Heltec-esp32:esp32@3.3.8 --additional-urls "$BOARD_INDEX"
+          arduino-cli lib install 'heltec-eink-modules@4.6.0' 'PubSubClient@2.8'
+      - name: Compile verified TLS configuration with isolated test values
+        run: python3 scripts/build.py --example
+      - name: Compile explicit insecure TLS configuration with isolated test values
+        run: python3 scripts/build.py --example --insecure

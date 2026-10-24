@@ -1,0 +1,21 @@
+# Personal configuration and local originals
+arduino_secrets.h
+config.h
+.local/
+.env
+.env.*
+*.pem
+*.key
+
+# Firmware images contain the compiled credentials
+build/
+.pio/
+*.bin
+*.elf
+*.hex
+*.map
+*.uf2
+*.zip
+*.log
+__pycache__/
+.DS_Store
